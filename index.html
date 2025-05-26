@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta property="og:description" content="Find ANY Blooket stream on Youtube. 
+Developed By Lil Skittle">
+    <meta property="og:image" content="https://avatars.githubusercontent.com/u/137687295?s=200&v=4">
+    <title>Blooket Stream Finder</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="icon"
+      href="https://avatars.githubusercontent.com/u/137687295?s=200&v=4"
+      type="image/x-icon"
+    />
+    <style>
+      body {
+        background: #000000;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        background-image: linear-gradient(
+            to right,
+            rgba(0, 0, 0, 0.8) 0%,
+            transparent 100%
+          ),
+          linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      h1 {
+        color: #da0605;
+        text-align: center;
+        font-size: 2.8em;
+        margin: 30px 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        letter-spacing: 2px;
+      }
+
+      .refresh-container {
+        text-align: center;
+        margin: 20px 0 40px 0;
+      }
+
+      .refresh-button {
+        background: #2d2d2d;
+        color: #da0605;
+        border: none;
+        padding: 12px 25px;
+        font-size: 1.1em;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 1px solid #3a3a3a;
+        margin-bottom: 15px;
+      }
+
+      .refresh-button:hover {
+        background: #3a3a3a;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      #results {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        padding: 20px;
+      }
+
+      .stream-card {
+        background: #222222;
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid #333333;
+      }
+
+      .stream-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        border-color: #da0605;
+      }
+
+      .thumbnail {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        border-bottom: 1px solid #333333;
+        transition: all 0.3s;
+      }
+
+      .stream-card:hover .thumbnail {
+        filter: brightness(1.1);
+      }
+
+      .stream-info {
+        padding: 20px;
+      }
+
+      .stream-title {
+        color: #da0605;
+        font-size: 1.1em;
+        margin-bottom: 12px;
+        font-weight: 500;
+      }
+
+      .channel-name {
+        color: #999999;
+        font-size: 0.9em;
+        margin-bottom: 12px;
+      }
+
+      .live-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+        color: #da0605;
+        font-weight: 500;
+        font-size: 0.9em;
+      }
+
+      .live-dot {
+        width: 8px;
+        height: 8px;
+        background-color: #da0605;
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          opacity: 0.6;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0.6;
+        }
+      }
+
+      .watch-button {
+        width: 100%;
+        padding: 10px;
+        background: #2d2d2d;
+        color: #da0605;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: 1px solid #3a3a3a;
+        margin-bottom: 8px;
+      }
+
+      .watch-button:hover {
+        background: #3a3a3a;
+        transform: translateY(-2px);
+      }
+
+      .no-streams {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 30px;
+        background: #222222;
+        border-radius: 12px;
+        color: #da0605;
+        font-size: 1.2em;
+        border: 1px solid #333333;
+      }
+
+      .loading {
+        grid-column: 1 / -1;
+        text-align: center;
+        color: #da0605;
+        font-size: 1.2em;
+        padding: 30px;
+      }
+
+      .toggle-button-on {
+        background-color: green;
+        color: white;
+      }
+
+      .toggle-container {
+        text-align: center;
+      }
+
+      .toggle-button {
+        display: inline-block;
+        margin: 10px 0;
+      }
+      
+      .splash-text {
+        color: #da0605;
+        text-align: center;
+        font-size: 1.2em;
+        margin: -20px 0 20px 0;
+        font-style: italic;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        animation: fadeIn 0.5s ease-in;
+      }
+      
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      #api-status {
+        text-align: center;
+        color: #999999;
+        margin-top: 10px;
+        font-size: 0.9em;
+      }
+
+      @media (max-width: 768px) {
+        h1 {
+          font-size: 2.2em;
+        }
+
+        .container {
+          padding: 10px;
+        }
+
+        #results {
+          gap: 15px;
+          padding: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Blooket Stream Finder</h1>
+      <div id="splash-text" class="splash-text"></div>
+      <div class="refresh-container">
+        <button class="refresh-button" onclick="fetchBlooketStreams()">
+          Refresh Streams
+        </button>
+      </div>
+
+      <div class="toggle-container">
+        <button
+          id="hideButton"
+          class="refresh-button toggle-button-on"
+          onclick="toggleHideStreams()"
+        >
+          Hide 24/7 Streamers
+        </button>
+        <button
+          id="previewButton"
+          class="refresh-button"
+          onclick="togglePreview()"
+        >
+          Preview Streams (Off)
+        </button>
+      </div>
+
+      <div id="api-status"></div>
+      <div id="results"></div>
+    </div>
+
+    <script>
+      const API_KEYS = [
+        "AIzaSyC4PWwN9Y8XBKS24lErlXP7aCi67fgxx-Q",
+        "AIzaSyA3EpjGxFySphF70bETyqXhxfKD74tXxYI",
+        "AIzaSyD4lp6jcTCfKVX14bs0WEYjy0uOJklJGbE", 
+        "AIzaSyDkXj66lPy0lC7sRrGfXzFk7dww0c_jkg0", 
+        "AIzaSyDlNCK4m_gzo3mcQVJYlUzCw_YMFz4gpNY", 
+        "AIzaSyAbb5631Si3GlcnBtL93TJi8iiWX6BvVbg",
+        "AIzaSyBkXbsHV6QnMjkRo99lVu0Oitdnu6-NPp0",
+        "AIzaSyB2uwMkvdKoa72E1GGETVi-32xoC7csJDU",
+        "AIzaSyAYOSRBMrBL32amTeIGfY_g4hoHOyoQvLQ",
+      ];
+
+      let currentKeyIndex = 0;
+      let failedKeys = new Set();
+      let hide24Seven = true;
+      let previewStreams = false;
+
+      async function getWorkingApiKey() {
+        const startIndex = currentKeyIndex;
+        const statusDiv = document.getElementById("api-status");
+
+        do {
+          if (!failedKeys.has(currentKeyIndex)) {
+            const key = API_KEYS[currentKeyIndex];
+            try {
+              const testUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=test&maxResults=1&key=${key}`;
+              const response = await fetch(testUrl);
+
+              if (response.ok) {
+                statusDiv.textContent = `Using API key ${currentKeyIndex + 1}`;
+                return key;
+              } else {
+                failedKeys.add(currentKeyIndex);
+              }
+            } catch (error) {
+              failedKeys.add(currentKeyIndex);
+            }
+          }
+
+          currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
+        } while (
+          currentKeyIndex !== startIndex &&
+          failedKeys.size < API_KEYS.length
+        );
+
+        if (failedKeys.size >= API_KEYS.length) {
+          statusDiv.textContent =
+            "All API keys are currently exhausted. Please try again later.";
+          throw new Error("All API keys are exhausted");
+        }
+
+        return API_KEYS[currentKeyIndex];
+      }
+
+      async function fetchBlooketStreams() {
+        const resultsDiv = document.getElementById("results");
+        resultsDiv.innerHTML = '<div class="loading">Finding streams...</div>';
+
+        try {
+          const apiKey = await getWorkingApiKey();
+          const query = "blooket";
+          const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(
+            query
+          )}&type=video&eventType=live&maxResults=50&key=${apiKey}`;
+
+          const response = await fetch(url);
+          if (!response.ok) {
+            failedKeys.add(currentKeyIndex);
+            return await fetchBlooketStreams();
+          }
+
+          const data = await response.json();
+
+          let blooketStreams = data.items
+            .filter(
+              (stream) =>
+                stream.snippet.title.toLowerCase().includes("blooket") ||
+                stream.snippet.title.toLowerCase().includes("#blooket")
+            )
+            .filter((stream) => stream.snippet.liveBroadcastContent === "live");
+
+          if (hide24Seven) {
+            const excludedStreamers = [
+              "Logan DeRosa",
+              "Panda ツ",
+              "Blynx VODs",
+              "Cali",
+              "Brotherly Gaming",
+              "Doggo",
+              "Neonate ",
+              "Pluto",
+              "epicmines33",
+            ];
+            blooketStreams = blooketStreams.filter(
+              (stream) =>
+                !excludedStreamers.includes(stream.snippet.channelTitle)
+            );
+          }
+
+          displayResults(blooketStreams);
+        } catch (error) {
+          console.error("Error fetching streams:", error);
+          resultsDiv.innerHTML =
+            '<div class="no-streams">Error loading streams. Please try again later.</div>';
+        }
+      }
+
+      function displayResults(streams) {
+        const resultsDiv = document.getElementById("results");
+        resultsDiv.innerHTML = "";
+
+        if (!streams || streams.length === 0) {
+          resultsDiv.innerHTML =
+            '<div class="no-streams">No Blooket Streamers Are Currently Live. Wait Until Someone Goes Live!</div>';
+          return;
+        }
+
+        streams.forEach((stream) => {
+          const streamCard = document.createElement("div");
+          streamCard.className = "stream-card";
+
+          const thumbnail = previewStreams
+            ? `<iframe width="100%" height="180" src="https://www.youtube.com/embed/${stream.id.videoId}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`
+            : `<img class="thumbnail" src="${stream.snippet.thumbnails.medium.url}" alt="Stream Thumbnail">`;
+
+          streamCard.innerHTML = `
+                    <div class="thumbnail-container">
+                        ${thumbnail}
+                    </div>
+                    <div class="stream-info">
+                        <div class="stream-title">${stream.snippet.title}</div>
+                        <div class="channel-name">by ${stream.snippet.channelTitle}</div>
+                        <div class="live-indicator">
+                            <div class="live-dot"></div>
+                            Live
+                        </div>
+                        <button class="watch-button" onclick="window.location.href='https://www.youtube.com/watch?v=${stream.id.videoId}'">Watch Now</button>
+                        <button class="watch-button" onclick="createIframe('${stream.id.videoId}')">Troll Streamer</button>
+                        <button class="watch-button" onclick="createBlooketHack('${stream.id.videoId}')">Flood Streamer</button>
+                    </div>
+                `;
+          resultsDiv.appendChild(streamCard);
+        });
+      }
+
+      function toggleHideStreams() {
+        hide24Seven = !hide24Seven;
+        const hideButton = document.getElementById("hideButton");
+        hideButton.classList.toggle("toggle-button-on");
+        fetchBlooketStreams();
+      }
+
+      function togglePreview() {
+        previewStreams = !previewStreams;
+        const previewButton = document.getElementById("previewButton");
+        if (previewStreams) {
+          previewButton.classList.add("toggle-button-on");
+          previewButton.textContent = "Preview Streams (On)";
+        } else {
+          previewButton.classList.remove("toggle-button-on");
+          previewButton.textContent = "Preview Streams (Off)";
+        }
+        fetchBlooketStreams();
+      }
+
+      function getRandomSplashText() {
+        const splashTexts = [
+          "Troll and fuck around",
+          "Anticheat? BOOOOO",
+          "Don't crash out over Blooket bro",
+          "Make Blooket Great Again",
+          "ez",
+          "MY API KEYS",
+          "Scott is crying",
+          "Streams trolled, blunts rolled",
+          "Notice how most of these streamers are like five?",
+          "Mfs crying over pixels",
+          "Neonate, don't try to get free promo off my site",
+          "dont give me any legal action, ben",
+          "Hello skids, I have my API keys locked to the site (:",
+          "Skittle was here",
+          "BlooketBot is cool",
+          "ORIGINAL IDEA?????!!!!!!",
+          "EST 2024",
+          "How do yall 24/7 streamers pay your electricty bills??",
+          "Please send me your Youtube API keys",
+          "3p1c h4X0R M0d3???",
+          "'Infinite token hack when?'",
+          "BSF #1",
+          "Still getting updated",
+          "epic > neonate",
+          "thx epic",
+          "checkout epic, kinda a cool guy",
+          "Pro tip guys, set your name as 'constructor' ;)",
+          "Blastfuel is a pretty cool guy",
+          "Promo me?",
+          "Send this to all your friends",
+          "Living in Ben's head rent free",
+          "Send me idea or something",
+          "Hey CoolDuck, did BCPIB drop yet?"
+        ];
+        
+        return splashTexts[Math.floor(Math.random() * splashTexts.length)];
+      }
+      
+      function updateSplashText() {
+        document.getElementById("splash-text").textContent = getRandomSplashText();
+      }
+
+      setInterval(() => {
+        failedKeys.clear();
+        document.getElementById("api-status").textContent =
+          "API keys reset. Ready to fetch new streams.";
+      }, 3600000);
+      
+      window.onload = function() {
+        updateSplashText();
+        fetchBlooketStreams();
+      };
+
+      function createIframe(vidId) {
+        var yt = document.createElement("iframe");
+        yt.src = "https://www.youtube.com/embed/" + vidId;
+        yt.style =
+          "position:fixed; top:0; left:0; bottom:0; right:0; width:50%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;";
+        var bb = document.createElement("iframe");
+        bb.src = "https://blooketbot.glitch.me/";
+        bb.style =
+          "position:fixed; top:0; left:50%; bottom:0; right:0; width:50%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;";
+        document.body.appendChild(yt);
+        document.body.appendChild(bb);
+      }
+      
+      function createBlooketHack(vidId) {
+        var yt = document.createElement("iframe");
+        yt.src = "https://www.youtube.com/embed/" + vidId;
+        yt.style =
+          "position:fixed; top:0; left:0; bottom:0; right:0; width:50%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;";
+        var hack = document.createElement("iframe");
+        hack.src = "https://blooketbotlite.glitch.me/flooder.html";
+        hack.style =
+          "position:fixed; top:0; left:50%; bottom:0; right:0; width:50%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;";
+        document.body.appendChild(yt);
+        document.body.appendChild(hack);
+      }
+    </script>
+  </body>
+</html>
