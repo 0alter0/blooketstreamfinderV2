@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -270,174 +271,113 @@ Developed By Lil Skittle">
       <div id="results"></div>
     </div>
 
-    <script> //these arent for you!!! nor can you use them
-      const API_KEYS = [
-        "AIzaSyC4PWwN9Y8XBKS24lErlXP7aCi67fgxx-Q",
-        "AIzaSyA3EpjGxFySphF70bETyqXhxfKD74tXxYI",
-        "AIzaSyD4lp6jcTCfKVX14bs0WEYjy0uOJklJGbE", 
-        "AIzaSyDkXj66lPy0lC7sRrGfXzFk7dww0c_jkg0", 
-        "AIzaSyDlNCK4m_gzo3mcQVJYlUzCw_YMFz4gpNY", 
-        "AIzaSyAbb5631Si3GlcnBtL93TJi8iiWX6BvVbg",
-        "AIzaSyBkXbsHV6QnMjkRo99lVu0Oitdnu6-NPp0",
-        "AIzaSyB2uwMkvdKoa72E1GGETVi-32xoC7csJDU",
-        "AIzaSyAYOSRBMrBL32amTeIGfY_g4hoHOyoQvLQ",
-      ];
+    <script>
+  const API_KEY = "AIzaSyD4lp6jcTCfKVX14bs0WEYjy0uOJklJGbE";
+  let hide24Seven = true;
+  let previewStreams = false;
 
-      let currentKeyIndex = 0;
-      let failedKeys = new Set();
-      let hide24Seven = true;
-      let previewStreams = false;
+  async function fetchBlooketStreams() {
+    const resultsDiv = document.getElementById("results");
+    resultsDiv.innerHTML = '<div class="loading">Finding streams...</div>';
+    document.getElementById("api-status").textContent = "Using active API key.";
 
-      async function getWorkingApiKey() {
-        const startIndex = currentKeyIndex;
-        const statusDiv = document.getElementById("api-status");
+    try {
+      const query = "blooket";
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(
+        query
+      )}&type=video&eventType=live&maxResults=50&key=${API_KEY}`;
 
-        do {
-          if (!failedKeys.has(currentKeyIndex)) {
-            const key = API_KEYS[currentKeyIndex];
-            try {
-              const testUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=test&maxResults=1&key=${key}`;
-              const response = await fetch(testUrl);
+      const response = await fetch(url);
+      const data = await response.json();
 
-              if (response.ok) {
-                statusDiv.textContent = `Using API key ${currentKeyIndex + 1}`;
-                return key;
-              } else {
-                failedKeys.add(currentKeyIndex);
-              }
-            } catch (error) {
-              failedKeys.add(currentKeyIndex);
-            }
-          }
+      if (!response.ok || !data.items) {
+        throw new Error("Failed to fetch data");
+      }
 
-          currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
-        } while (
-          currentKeyIndex !== startIndex &&
-          failedKeys.size < API_KEYS.length
+      let streams = data.items.filter((item) =>
+        item.snippet.title.toLowerCase().includes("blooket")
+      );
+
+      if (hide24Seven) {
+        const excludedChannels = [
+          "Logan DeRosa",
+          "Panda ツ",
+          "Blynx VODs",
+          "Cali",
+          "Brotherly Gaming",
+          "Doggo",
+          "Neonate ",
+          "Pluto",
+          "epicmines33",
+        ];
+        streams = streams.filter(
+          (stream) => !excludedChannels.includes(stream.snippet.channelTitle)
         );
-
-        if (failedKeys.size >= API_KEYS.length) {
-          statusDiv.textContent =
-            "All API keys are currently exhausted. Please try again later.";
-          throw new Error("All API keys are exhausted");
-        }
-
-        return API_KEYS[currentKeyIndex];
       }
 
-      async function fetchBlooketStreams() {
-        const resultsDiv = document.getElementById("results");
-        resultsDiv.innerHTML = '<div class="loading">Finding streams...</div>';
+      displayStreams(streams);
+    } catch (error) {
+      console.error("Error fetching streams:", error);
+      resultsDiv.innerHTML =
+        '<div class="no-streams">Error loading streams. Try again later.</div>';
+      document.getElementById("api-status").textContent = "API request failed.";
+    }
+  }
 
-        try {
-          const apiKey = await getWorkingApiKey();
-          const query = "blooket";
-          const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(
-            query
-          )}&type=video&eventType=live&maxResults=50&key=${apiKey}`;
+  function displayStreams(streams) {
+    const resultsDiv = document.getElementById("results");
+    resultsDiv.innerHTML = "";
 
-          const response = await fetch(url);
-          if (!response.ok) {
-            failedKeys.add(currentKeyIndex);
-            return await fetchBlooketStreams();
-          }
+    if (!streams.length) {
+      resultsDiv.innerHTML =
+        '<div class="no-streams">No Blooket Streamers Are Currently Live.</div>';
+      return;
+    }
 
-          const data = await response.json();
+    streams.forEach((stream) => {
+      const vidId = stream.id.videoId;
+      const title = stream.snippet.title;
+      const channel = stream.snippet.channelTitle;
+      const thumb = stream.snippet.thumbnails.medium.url;
 
-          let blooketStreams = data.items
-            .filter(
-              (stream) =>
-                stream.snippet.title.toLowerCase().includes("blooket") ||
-                stream.snippet.title.toLowerCase().includes("#blooket")
-            )
-            .filter((stream) => stream.snippet.liveBroadcastContent === "live");
+      const card = document.createElement("div");
+      card.className = "stream-card";
 
-          if (hide24Seven) {
-            const excludedStreamers = [
-              "Logan DeRosa",
-              "Panda ツ",
-              "Blynx VODs",
-              "Cali",
-              "Brotherly Gaming",
-              "Doggo",
-              "Neonate ",
-              "Pluto",
-              "epicmines33",
-            ];
-            blooketStreams = blooketStreams.filter(
-              (stream) =>
-                !excludedStreamers.includes(stream.snippet.channelTitle)
-            );
-          }
+      const media = previewStreams
+        ? `<iframe width="100%" height="180" src="https://www.youtube.com/embed/${vidId}" frameborder="0" allowfullscreen></iframe>`
+        : `<img class="thumbnail" src="${thumb}" alt="Thumbnail">`;
 
-          displayResults(blooketStreams);
-        } catch (error) {
-          console.error("Error fetching streams:", error);
-          resultsDiv.innerHTML =
-            '<div class="no-streams">Error loading streams. Please try again later.</div>';
-        }
-      }
+      card.innerHTML = `
+        <div class="thumbnail-container">${media}</div>
+        <div class="stream-info">
+          <div class="stream-title">${title}</div>
+          <div class="channel-name">by ${channel}</div>
+          <div class="live-indicator"><div class="live-dot"></div>Live</div>
+          <button class="watch-button" onclick="window.open('https://www.youtube.com/watch?v=${vidId}', '_blank')">Watch Now</button>
+          <button class="watch-button" onclick="createIframe('${vidId}')">Troll Streamer</button>
+          <button class="watch-button" onclick="createBlooketHack('${vidId}')">Flood Streamer</button>
+        </div>
+      `;
+      resultsDiv.appendChild(card);
+    });
+  }
 
-      function displayResults(streams) {
-        const resultsDiv = document.getElementById("results");
-        resultsDiv.innerHTML = "";
+  function toggleHideStreams() {
+    hide24Seven = !hide24Seven;
+    document.getElementById("hideButton").classList.toggle("toggle-button-on");
+    fetchBlooketStreams();
+  }
 
-        if (!streams || streams.length === 0) {
-          resultsDiv.innerHTML =
-            '<div class="no-streams">No Blooket Streamers Are Currently Live. Wait Until Someone Goes Live!</div>';
-          return;
-        }
+  function togglePreview() {
+    previewStreams = !previewStreams;
+    const btn = document.getElementById("previewButton");
+    btn.textContent = `Preview Streams (${previewStreams ? "On" : "Off"})`;
+    btn.classList.toggle("toggle-button-on", previewStreams);
+    fetchBlooketStreams();
+  }
 
-        streams.forEach((stream) => {
-          const streamCard = document.createElement("div");
-          streamCard.className = "stream-card";
-
-          const thumbnail = previewStreams
-            ? `<iframe width="100%" height="180" src="https://www.youtube.com/embed/${stream.id.videoId}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`
-            : `<img class="thumbnail" src="${stream.snippet.thumbnails.medium.url}" alt="Stream Thumbnail">`;
-
-          streamCard.innerHTML = `
-                    <div class="thumbnail-container">
-                        ${thumbnail}
-                    </div>
-                    <div class="stream-info">
-                        <div class="stream-title">${stream.snippet.title}</div>
-                        <div class="channel-name">by ${stream.snippet.channelTitle}</div>
-                        <div class="live-indicator">
-                            <div class="live-dot"></div>
-                            Live
-                        </div>
-                        <button class="watch-button" onclick="window.location.href='https://www.youtube.com/watch?v=${stream.id.videoId}'">Watch Now</button>
-                        <button class="watch-button" onclick="createIframe('${stream.id.videoId}')">Troll Streamer</button>
-                        <button class="watch-button" onclick="createBlooketHack('${stream.id.videoId}')">Flood Streamer</button>
-                    </div>
-                `;
-          resultsDiv.appendChild(streamCard);
-        });
-      }
-
-      function toggleHideStreams() {
-        hide24Seven = !hide24Seven;
-        const hideButton = document.getElementById("hideButton");
-        hideButton.classList.toggle("toggle-button-on");
-        fetchBlooketStreams();
-      }
-
-      function togglePreview() {
-        previewStreams = !previewStreams;
-        const previewButton = document.getElementById("previewButton");
-        if (previewStreams) {
-          previewButton.classList.add("toggle-button-on");
-          previewButton.textContent = "Preview Streams (On)";
-        } else {
-          previewButton.classList.remove("toggle-button-on");
-          previewButton.textContent = "Preview Streams (Off)";
-        }
-        fetchBlooketStreams();
-      }
-
-      function getRandomSplashText() {
-        const splashTexts = [
+  function updateSplashText() {
+    const texts = [
           "Troll and fuck around",
           "Anticheat? BOOOOO",
           "Don't crash out over Blooket bro",
@@ -471,52 +411,45 @@ Developed By Lil Skittle">
           "Living in Ben's head rent free",
           "Send me idea or something",
           "Hey CoolDuck, did BCPIB drop yet?",
-          "RIP Glitch."
-        ];
-        
-        return splashTexts[Math.floor(Math.random() * splashTexts.length)];
-      }
-      
-      function updateSplashText() {
-        document.getElementById("splash-text").textContent = getRandomSplashText();
-      }
+          "Enchanced by DannyDan"
+    ];
+    document.getElementById("splash-text").textContent =
+      texts[Math.floor(Math.random() * texts.length)];
+  }
 
-      setInterval(() => {
-        failedKeys.clear();
-        document.getElementById("api-status").textContent =
-          "API keys reset. Ready to fetch new streams.";
-      }, 3600000);
-      
-      window.onload = function() {
-        updateSplashText();
-        fetchBlooketStreams();
-      };
+  function createIframe(vidId) {
+    const yt = document.createElement("iframe");
+    yt.src = `https://www.youtube.com/embed/${vidId}`;
+    yt.style =
+      "position:fixed;top:0;left:0;width:50%;height:100%;border:none;z-index:99999;";
 
-      function createIframe(vidId) {
-        var yt = document.createElement("iframe");
-        yt.src = "https://www.youtube.com/embed/" + vidId;
-        yt.style =
-          "position:fixed; top:0; left:0; bottom:0; right:0; width:50%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;";
-        var bb = document.createElement("iframe");
-        bb.src = "https://blooketbot.glitch.me/";
-        bb.style =
-          "position:fixed; top:0; left:50%; bottom:0; right:0; width:50%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;";
-        document.body.appendChild(yt);
-        document.body.appendChild(bb);
-      }
-      
-      function createBlooketHack(vidId) {
-        var yt = document.createElement("iframe");
-        yt.src = "https://www.youtube.com/embed/" + vidId;
-        yt.style =
-          "position:fixed; top:0; left:0; bottom:0; right:0; width:50%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;";
-        var hack = document.createElement("iframe");
-        hack.src = "https://blooketbotlite.glitch.me/flooder.html";
-        hack.style =
-          "position:fixed; top:0; left:50%; bottom:0; right:0; width:50%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;";
-        document.body.appendChild(yt);
-        document.body.appendChild(hack);
-      }
-    </script>
+    const bb = document.createElement("iframe");
+    bb.src = "https://blooketbot.glitch.me/";
+    bb.style =
+      "position:fixed;top:0;left:50%;width:50%;height:100%;border:none;z-index:99999;";
+
+    document.body.append(yt, bb);
+  }
+
+  function createBlooketHack(vidId) {
+    const yt = document.createElement("iframe");
+    yt.src = `https://www.youtube.com/embed/${vidId}`;
+    yt.style =
+      "position:fixed;top:0;left:0;width:50%;height:100%;border:none;z-index:99999;";
+
+    const hack = document.createElement("iframe");
+    hack.src = "https://blooketbotlite.glitch.me/flooder.html";
+    hack.style =
+      "position:fixed;top:0;left:50%;width:50%;height:100%;border:none;z-index:99999;";
+
+    document.body.append(yt, hack);
+  }
+
+  window.onload = () => {
+    updateSplashText();
+    fetchBlooketStreams();
+  };
+</script>
+
   </body>
 </html>
