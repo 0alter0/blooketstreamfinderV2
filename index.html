@@ -242,7 +242,7 @@ Developed By Lil Skittle">
   </head>
   <body>
     <div class="container">
-      <h1>Blooket Stream Finder</h1>
+      <h1>Blooket Stream Finder V2</h1>
       <div id="splash-text" class="splash-text"></div>
       <div class="refresh-container">
         <button class="refresh-button" onclick="fetchBlooketStreams()">
@@ -279,7 +279,7 @@ Developed By Lil Skittle">
   async function fetchBlooketStreams() {
     const resultsDiv = document.getElementById("results");
     resultsDiv.innerHTML = '<div class="loading">Finding streams...</div>';
-    document.getElementById("api-status").textContent = "Using active API key.";
+    document.getElementById("api-status").textContent = "Streams Found:";
 
     try {
       const query = "blooket";
