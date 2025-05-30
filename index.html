@@ -271,75 +271,31 @@ Developed By Lil Skittle">
     </div>
 
     <script>
-      const API_KEYS = [
-        "AIzaSyC4PWwN9Y8XBKS24lErlXP7aCi67fgxx-Q",
-        "AIzaSyA3EpjGxFySphF70bETyqXhxfKD74tXxYI",
-        "AIzaSyD4lp6jcTCfKVX14bs0WEYjy0uOJklJGbE", 
-        "AIzaSyDkXj66lPy0lC7sRrGfXzFk7dww0c_jkg0", 
-        "AIzaSyDlNCK4m_gzo3mcQVJYlUzCw_YMFz4gpNY", 
-        "AIzaSyAbb5631Si3GlcnBtL93TJi8iiWX6BvVbg",
-        "AIzaSyBkXbsHV6QnMjkRo99lVu0Oitdnu6-NPp0",
-        "AIzaSyB2uwMkvdKoa72E1GGETVi-32xoC7csJDU",
-        "AIzaSyAYOSRBMrBL32amTeIGfY_g4hoHOyoQvLQ",
-      ];
-
-      let currentKeyIndex = 0;
-      let failedKeys = new Set();
+      const RAPIDAPI_KEY = "ab5deb5f6bmsh503cc98ec9fec87p10b9bfjsnc2bbbd734c8b";
       let hide24Seven = true;
       let previewStreams = false;
-
-      async function getWorkingApiKey() {
-        const startIndex = currentKeyIndex;
-        const statusDiv = document.getElementById("api-status");
-
-        do {
-          if (!failedKeys.has(currentKeyIndex)) {
-            const key = API_KEYS[currentKeyIndex];
-            try {
-              const testUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=test&maxResults=1&key=${key}`;
-              const response = await fetch(testUrl);
-
-              if (response.ok) {
-                statusDiv.textContent = `Using API key ${currentKeyIndex + 1}`;
-                return key;
-              } else {
-                failedKeys.add(currentKeyIndex);
-              }
-            } catch (error) {
-              failedKeys.add(currentKeyIndex);
-            }
-          }
-
-          currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
-        } while (
-          currentKeyIndex !== startIndex &&
-          failedKeys.size < API_KEYS.length
-        );
-
-        if (failedKeys.size >= API_KEYS.length) {
-          statusDiv.textContent =
-            "All API keys are currently exhausted. Please try again later.";
-          throw new Error("All API keys are exhausted");
-        }
-
-        return API_KEYS[currentKeyIndex];
-      }
 
       async function fetchBlooketStreams() {
         const resultsDiv = document.getElementById("results");
         resultsDiv.innerHTML = '<div class="loading">Finding streams...</div>';
+        document.getElementById("api-status").textContent = "Using RapidAPI YouTube search";
 
         try {
-          const apiKey = await getWorkingApiKey();
           const query = "blooket";
-          const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(
+          const url = `https://youtube-v31.p.rapidapi.com/search?part=snippet&q=${encodeURIComponent(
             query
-          )}&type=video&eventType=live&maxResults=50&key=${apiKey}`;
+          )}&type=video&eventType=live&maxResults=50`;
 
-          const response = await fetch(url);
+          const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+              'X-RapidAPI-Key': RAPIDAPI_KEY,
+              'X-RapidAPI-Host': 'youtube-v31.p.rapidapi.com'
+            }
+          });
+
           if (!response.ok) {
-            failedKeys.add(currentKeyIndex);
-            return await fetchBlooketStreams();
+            throw new Error(`API request failed with status ${response.status}`);
           }
 
           const data = await response.json();
@@ -375,6 +331,7 @@ Developed By Lil Skittle">
           console.error("Error fetching streams:", error);
           resultsDiv.innerHTML =
             '<div class="no-streams">Error loading streams. Please try again later.</div>';
+          document.getElementById("api-status").textContent = "Error fetching streams";
         }
       }
 
@@ -443,7 +400,7 @@ Developed By Lil Skittle">
           "Don't crash out over Blooket bro",
           "Make Blooket Great Again",
           "ez",
-          "MY API KEYS",
+          "Now with RapidAPI",
           "Scott is crying",
           "Streams trolled, blunts rolled",
           "Notice how most of these streamers are like five?",
@@ -456,7 +413,7 @@ Developed By Lil Skittle">
           "ORIGINAL IDEA?????!!!!!!",
           "EST 2024",
           "How do yall 24/7 streamers pay your electricty bills??",
-          "Please send me your Youtube API keys",
+          "Powered by RapidAPI",
           "3p1c h4X0R M0d3???",
           "'Infinite token hack when?'",
           "BSF #1",
@@ -469,8 +426,9 @@ Developed By Lil Skittle">
           "Promo me?",
           "Send this to all your friends",
           "Living in Ben's head rent free",
-          "Send me idea or something",
-          "Hey CoolDuck, did BCPIB drop yet?"
+          "Send me ideas or something",
+          "Hey CoolDuck, did BCPIB drop yet?",
+          "Enchanced By DannyDan",
         ];
         
         return splashTexts[Math.floor(Math.random() * splashTexts.length)];
@@ -479,12 +437,6 @@ Developed By Lil Skittle">
       function updateSplashText() {
         document.getElementById("splash-text").textContent = getRandomSplashText();
       }
-
-      setInterval(() => {
-        failedKeys.clear();
-        document.getElementById("api-status").textContent =
-          "API keys reset. Ready to fetch new streams.";
-      }, 3600000);
       
       window.onload = function() {
         updateSplashText();
