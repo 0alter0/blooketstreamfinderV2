@@ -6,4 +6,4 @@ Since Glitch is shutting (or has) down, BSF will be moving here and will ONLY re
 Thanks DannyDan for helping with V2
 
 # INFO
-Until BlooketBot is moved/fixed, it'll work on the site. For now, use BCP (Blooket Cheats Plus)
+BlooketBot has currently been removed from the site. It is unclear if it'll be added back.
