@@ -7,3 +7,6 @@ Thanks DannyDan for helping with V2
 
 # INFO
 BlooketBot has currently been removed from the site. It is unclear if it'll be added back.
+
+# NOTICE
+I haven't maintained this project in 2 months as it died off, broke, and had many issues, one being the whole API stuff.
