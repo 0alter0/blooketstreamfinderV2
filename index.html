@@ -367,7 +367,7 @@ Developed By Lil Skittle">
                             Live
                         </div>
                         <button class="watch-button" onclick="window.location.href='https://www.youtube.com/watch?v=${stream.id.videoId}'">Watch Now</button>
-                        <button class="watch-button" onclick="createIframe('${stream.id.videoId}')">Use BCP</button>
+                        <button class="watch-button" onclick="createIframe('${stream.id.videoId}')">Use XGUI</button>
                     </div>
                 `;
           resultsDiv.appendChild(streamCard);
@@ -450,7 +450,7 @@ function createIframe(vidId) {
   yt.src = "https://www.youtube.com/embed/" + vidId;
   yt.style = "position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;";
   document.body.appendChild(yt);
-  window.open("https://github.com/randomstuff69/blooketcheatsplus/blob/main/GUI/Gui.min.js", "_blank");
+  window.open("https://github.com/xgui-client/X-GUI-BLOOKET-CLIENT", "_blank");
 }
     </script>
   </body>
